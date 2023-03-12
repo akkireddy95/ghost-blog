@@ -1,0 +1,42 @@
+# Specify the version of Docker Compose to use
+version: '3.1'
+
+# Define the services to be run
+services:
+
+  # Set up the Ghost service
+  ghost:
+    # Use the ghost:4-alpine Docker image
+    image: ghost:4-alpine
+    # Always restart the container if it stops
+    restart: always
+    # Map port 8080 on the host to port 2368 in the container
+    ports:
+      - 8080:2368
+    # Set environment variables for Ghost
+    environment:
+      # Use MySQL as the database client
+      database__client: mysql
+      # Use the "db" service as the database host
+      database__connection__host: db
+      # Use "root" as the database user
+      database__connection__user: root
+      # Use "example" as the database password
+      database__connection__password: example
+      # Use "ghost" as the database name
+      database__connection__database: ghost
+      # Set the URL for the Ghost site (change this as needed)
+      url: http://localhost:8080
+      # Set the Node environment to production (this is the default)
+      NODE_ENV: production
+
+  # Set up the MySQL database service
+  db:
+    # Use the mysql:8.0 Docker image
+    image: mysql:8.0
+    # Always restart the container if it stops
+    restart: always
+    # Set environment variables for MySQL
+    environment:
+      # Use "example" as the MySQL root password
+      MYSQL_ROOT_PASSWORD: example
