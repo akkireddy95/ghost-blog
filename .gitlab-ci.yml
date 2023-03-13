@@ -1,0 +1,18 @@
+image: hashicorp/terraform:light
+
+before_script:
+  - terraform init
+
+stages:
+  - plan
+  - apply
+
+terraform plan:
+  stage: plan
+  script:
+    - terraform plan -out=terraform.plan
+
+terraform apply:
+  stage: apply
+  script:
+    - terraform apply -auto-approve terraform.plan
