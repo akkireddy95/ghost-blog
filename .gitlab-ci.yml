@@ -1,18 +1,26 @@
-image: hashicorp/terraform:light
-
-before_script:
-  - terraform init
-
 stages:
-  - plan
-  - apply
+  - build
+  - deploy
 
-terraform plan:
-  stage: plan
-  script:
-    - terraform plan -out=terraform.plan
+variables:
+  AWS_REGION: <your-aws-region>
+  IMAGE_NAME: <your-image-name>
+  ECR_REGISTRY: <your-ecr-registry>
 
-terraform apply:
-  stage: apply
+build:
+  image: docker:20.10.9
+  stage: build
   script:
-    - terraform apply -auto-approve terraform.plan
+    - docker build -t $IMAGE_NAME .
+    - docker tag $IMAGE_NAME $ECR_REGISTRY/$IMAGE_NAME
+    - echo $AWS_ACCESS_KEY_ID | docker login -u AWS --password-stdin $ECR_REGISTRY
+    - docker push $ECR_REGISTRY/$IMAGE_NAME
+
+deploy:
+  image: amazon/aws-cli:2.3.1
+  stage: deploy
+  script:
+    - aws configure set region $AWS_REGION
+    - aws ecs update-service --cluster <your-ecs-cluster-name> --service <your-ecs-service-name> --force-new-deployment
+   only:
+    - master
